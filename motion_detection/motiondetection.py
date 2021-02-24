@@ -23,6 +23,7 @@ df = pandas.DataFrame(columns = ['Start', 'End'])
 video = cv2.VideoCapture(0)
 #video = cv2.VideoCapture('assets/drone_vid3.mp4')
 
+buffer_count = 0
 # Infinite while loop to treat stack of images as video
 while True:
     status, frame = video.read()    # returns capture status and frame (numpy array)
@@ -36,6 +37,11 @@ while True:
     # Convert gray scale image to Gaussian Blue (reduce noise and detail to better detect motion)
     gaussian_frame = cv2.GaussianBlur(gray_frame, (21, 21), 0)
     
+    if buffer_count > 150:
+        static_back = None
+        buffer_count = 0
+    
+    buffer_count += 1
     # In first iteration assign value of static_back to first frame of video
     if static_back is None:
         static_back = gaussian_frame
