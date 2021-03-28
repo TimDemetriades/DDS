@@ -2,16 +2,18 @@ import xml.etree.ElementTree as ET
 import sys
 import os
 
-folder = str(sys.argv[1])
+xml_folder = str(sys.argv[1])
+img_folder = str(sys.argv[2])
 
-abspath = os.path.abspath(folder)
+xml_abspath = os.path.abspath(xml_folder)
+img_abspath = os.path.abspath(img_folder)
 
-for file in os.listdir(folder):
+for file in os.listdir(xml_folder):
     if '.xml' not in file:
         continue
 
-    file_path = abspath+'/'+file
-    print(file_path)
+    file_path = xml_abspath+'/'+file
+    # print(file_path)
     tree = ET.parse(file_path)
     root = tree.getroot()
     path = root.findall('./path')[0]
@@ -20,11 +22,12 @@ for file in os.listdir(folder):
     if 'Drone' not in name.text:
         print(f'Incorrect Object Name in file: {file}')
         name.text = 'Drone'
-    #path.text = file_path
+
+    path.text = img_abspath + '/' + file.strip('xml') + 'jpg'
 
     fixedXml = ET.tostring(root)
 
-    fixedPath = abspath+'/fixed_xmls'
+    fixedPath = xml_abspath+'/fixed_xmls'
 
     if not os.path.exists(fixedPath):
         os.makedirs(fixedPath)
