@@ -129,10 +129,10 @@ dmypy.json
 .pyre/
 
 # Tensorflow
-/Tensorflow/addons/labelImg/*
-/Tensorflow-GPU/addons/labelImg/*
-/Tensorflow/models/
-/Tensorflow-GPU/models/
+/Object-Detection/Tensorflow/addons/labelImg/*
+/Object-Detection/Tensorflow-GPU/addons/labelImg/*
+/Object-Detection/Tensorflow/models/
+/Object-Detection/Tensorflow-GPU/models/
 *.record
 *.zip
 
