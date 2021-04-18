@@ -131,3 +131,6 @@ dmypy.json
 # Tensorflow
 /Tensorflow/addons/labelImg/*
 /Tensorflow/models/
+*.record
+*.zip
+
