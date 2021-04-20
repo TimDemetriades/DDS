@@ -127,3 +127,12 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Tensorflow
+/Object-Detection/Tensorflow/addons/labelImg/*
+/Object-Detection/Tensorflow-GPU/addons/labelImg/*
+/Object-Detection/Tensorflow/models/
+/Object-Detection/Tensorflow-GPU/models/
+*.record
+*.zip
+
