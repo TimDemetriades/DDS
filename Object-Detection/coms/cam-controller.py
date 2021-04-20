@@ -14,14 +14,18 @@ import Pyro4.naming
 from multiprocessing import Process, Lock
 import detect
 
-#Pyro4.naming.startNS(host='155.246.209.42', port=9090)
+import board
+from adafruit_motor import stepper
+from adafruit_motorkit import MotorKit
 
+#Pyro4.naming.startNS(host='155.246.209.42', port=9090)\
 
 
 @Pyro4.expose
 @Pyro4.behavior(instance_mode="single")
 class Master(object):
     def __init__(self):
+        self.kit = MotorKit(i2c=board.I2C())
         self.detected = False
         self.freq = 0.0
 
@@ -39,7 +43,7 @@ class Master(object):
 
     def run_detection(self):
         #while True:
-        #    print('ree')
+        print('ree')
         detect.main()
         print("Done")
 
@@ -48,17 +52,20 @@ class Master(object):
         self.p.start()
 
     def stop_detection(self):
+        self.kit.stepper1.release()
         self.p.terminate()
         self.p.join()
         print('stop?')
 
 def main():
-
+    #daemon = Pyro4.Daemon(host="192.168.1.24", port=9090)
     Pyro4.Daemon.serveSimple(
             {
                 Master: "master-pi"
             },
             ns = True,
+            host = '192.168.1.24',
+            port = 9091
         )
 
 if __name__=="__main__":

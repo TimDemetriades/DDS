@@ -29,6 +29,7 @@ python3 detect.py \
 import argparse
 import cv2
 import os
+import sys
 
 from pycoral.adapters.common import input_size
 from pycoral.adapters.detect import get_objects
@@ -36,10 +37,17 @@ from pycoral.utils.dataset import read_label_file
 from pycoral.utils.edgetpu import make_interpreter
 from pycoral.utils.edgetpu import run_inference
 
+import time
+import board
+from adafruit_motor import stepper
+from adafruit_motorkit import MotorKit
+
+kit = MotorKit(i2c=board.I2C())
+
 def main():
     default_model_dir = './'
-    default_model = 'output_tflite_graph_edgetpu_v2.tflite'
-    default_labels = 'drone_labels.txt'
+    default_model = '/home/pi/DDS/Object-Detection/coms/output_tflite_graph_edgetpu_v2.tflite'
+    default_labels = '/home/pi/DDS/Object-Detection/coms/drone_labels.txt'
     parser = argparse.ArgumentParser()
     parser.add_argument('--model', help='.tflite model path',
                         default=os.path.join(default_model_dir,default_model))
@@ -72,14 +80,18 @@ def main():
         
         cv2_im = frame
 
+        height, width, _ = frame.shape
+        center_bar = ((2*width//3) - width//3)//2 + width//3
+        #cv2.line(cv2_im, (center_bar,0), (center_bar,height), (255,0,0), 5)
+
         cv2_im_rgb = cv2.cvtColor(cv2_im, cv2.COLOR_BGR2RGB)
         cv2_im_rgb = cv2.resize(cv2_im_rgb, inference_size)
         run_inference(interpreter, cv2_im_rgb.tobytes())
         objs = get_objects(interpreter, args.threshold)[:args.top_k]
         cv2_im = append_objs_to_img(cv2_im, inference_size, objs, labels)
         
-        cv2.putText(frame, f'FPS: {frame_rate_calc}', (30,50), cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,0),2,cv2.LINE_AA)
-        cv2.imshow('frame', cv2_im)
+        #cv2.putText(frame, f'FPS: {frame_rate_calc}', (30,50), cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,0),2,cv2.LINE_AA)
+        #cv2.imshow('frame', cv2_im)
         
         t2 = cv2.getTickCount()
         time1 = (t2-t1)/freq
@@ -90,23 +102,47 @@ def main():
 
     cap.release()
     cv2.destroyAllWindows()
+    kit.stepper1.release()
 
 def append_objs_to_img(cv2_im, inference_size, objs, labels):
     height, width, channels = cv2_im.shape
     scale_x, scale_y = width / inference_size[0], height / inference_size[1]
+    max_score = 0
+    if objs:
+        max_score = max([o.score for o in objs])
     for obj in objs:
-        if obj.score > .5:
+        if obj.score > .25:
             bbox = obj.bbox.scale(scale_x, scale_y)
             x0, y0 = int(bbox.xmin), int(bbox.ymin)
             x1, y1 = int(bbox.xmax), int(bbox.ymax)
+            center = (x1 - x0) // 2 + x0 
+            right_bar = width //3
+            left_bar = 2 * (width // 3)
+            center_bar = (right_bar - left_bar) // 2 + left_bar
 
             percent = int(100 * obj.score)
             label = '{}% {}'.format(percent, labels.get(obj.id, obj.id))
+            
 
-            cv2_im = cv2.rectangle(cv2_im, (x0, y0), (x1, y1), (0, 255, 0), 2)
-            cv2_im = cv2.putText(cv2_im, label, (x0, y0+30),
-                                 cv2.FONT_HERSHEY_SIMPLEX, 1.0, (255, 0, 0), 2)
+            if center < center_bar-20 and max_score >= obj.score:
+                kit.stepper1.onestep(direction=stepper.FORWARD, style=stepper.SINGLE)
+
+            if center > center_bar+20 and max_score >= obj.score:
+                kit.stepper1.onestep(direction=stepper.BACKWARD, style=stepper.SINGLE)
+
+            #cv2_im = cv2.rectangle(cv2_im, (x0, y0), (x1, y1), (0, 255, 0), 2)
+            #cv2_im = cv2.putText(cv2_im, label, (x0, y0+30),
+            #                     cv2.FONT_HERSHEY_SIMPLEX, 1.0, (255, 0, 0), 2)
     return cv2_im
 
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        cv2.destroyAllWindows()
+        kit.stepper1.release()
+        print('Interrupted')
+        try:
+            sys.exit(0)
+        except SystemExit:
+            os._exit(0)
