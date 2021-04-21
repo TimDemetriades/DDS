@@ -136,3 +136,6 @@ dmypy.json
 *.record
 *.zip
 
+# IQ Capture Directory
+
+IQ_Cap/
