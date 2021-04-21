@@ -64,7 +64,7 @@ def main():
                 Master: "master-pi"
             },
             ns = True,
-            host = '192.168.1.24',
+            host = '10.0.0.2',
             port = 9091
         )
 

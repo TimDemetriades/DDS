@@ -37,12 +37,30 @@ from pycoral.utils.dataset import read_label_file
 from pycoral.utils.edgetpu import make_interpreter
 from pycoral.utils.edgetpu import run_inference
 
+from flask import Flask, render_template, Response
+import threading
+# from camera import Camera
+
 import time
 import board
 from adafruit_motor import stepper
 from adafruit_motorkit import MotorKit
 
 kit = MotorKit(i2c=board.I2C())
+app = Flask(__name__)
+
+outputFrame = None
+lock = threading.Lock()
+
+@app.route('/')
+def index():
+    return render_template('./index.html')
+
+@app.route('/video_feed')
+def video_feed():
+    return Response(main(),
+                    mimetype='multipart/x-mixed-replace; boundary=frame')
+
 
 def main():
     default_model_dir = './'
@@ -75,14 +93,14 @@ def main():
         ret, frame = cap.read()
         if not ret:
             break
-        
+
         t1 = cv2.getTickCount()
         
         cv2_im = frame
 
         height, width, _ = frame.shape
         center_bar = ((2*width//3) - width//3)//2 + width//3
-        #cv2.line(cv2_im, (center_bar,0), (center_bar,height), (255,0,0), 5)
+        cv2.line(cv2_im, (center_bar,0), (center_bar,height), (255,0,0), 5)
 
         cv2_im_rgb = cv2.cvtColor(cv2_im, cv2.COLOR_BGR2RGB)
         cv2_im_rgb = cv2.resize(cv2_im_rgb, inference_size)
@@ -90,7 +108,7 @@ def main():
         objs = get_objects(interpreter, args.threshold)[:args.top_k]
         cv2_im = append_objs_to_img(cv2_im, inference_size, objs, labels)
         
-        #cv2.putText(frame, f'FPS: {frame_rate_calc}', (30,50), cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,0),2,cv2.LINE_AA)
+        cv2.putText(frame, f'FPS: {int(frame_rate_calc)}', (30,50), cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,0),2,cv2.LINE_AA)
         #cv2.imshow('frame', cv2_im)
         
         t2 = cv2.getTickCount()
@@ -99,6 +117,11 @@ def main():
         
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
+
+        (flag, encodedImage) = cv2.imencode(".jpg", cv2_im)
+        if not flag:
+            continue
+        yield(b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + bytearray(encodedImage) + b'\r\n')
 
     cap.release()
     cv2.destroyAllWindows()
@@ -111,7 +134,7 @@ def append_objs_to_img(cv2_im, inference_size, objs, labels):
     if objs:
         max_score = max([o.score for o in objs])
     for obj in objs:
-        if obj.score > .25:
+        if obj.score > .40:
             bbox = obj.bbox.scale(scale_x, scale_y)
             x0, y0 = int(bbox.xmin), int(bbox.ymin)
             x1, y1 = int(bbox.xmax), int(bbox.ymax)
@@ -130,14 +153,19 @@ def append_objs_to_img(cv2_im, inference_size, objs, labels):
             if center > center_bar+20 and max_score >= obj.score:
                 kit.stepper1.onestep(direction=stepper.BACKWARD, style=stepper.SINGLE)
 
-            #cv2_im = cv2.rectangle(cv2_im, (x0, y0), (x1, y1), (0, 255, 0), 2)
-            #cv2_im = cv2.putText(cv2_im, label, (x0, y0+30),
-            #                     cv2.FONT_HERSHEY_SIMPLEX, 1.0, (255, 0, 0), 2)
+            cv2_im = cv2.rectangle(cv2_im, (x0, y0), (x1, y1), (0, 255, 0), 2)
+            cv2_im = cv2.putText(cv2_im, label, (x0, y0+30),
+                                cv2.FONT_HERSHEY_SIMPLEX, 1.0, (255, 0, 0), 2)
+
+        if obj.score > .75:
+            cv2.putText(cv2_im, f'SHEEESH', (120,120), cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,0),2,cv2.LINE_AA)
+
     return cv2_im
 
 if __name__ == '__main__':
     try:
-        main()
+        # main()
+        app.run(host='192.168.1.24', debug=True)
     except KeyboardInterrupt:
         cv2.destroyAllWindows()
         kit.stepper1.release()
