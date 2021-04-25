@@ -42,10 +42,8 @@ class Master(object):
         self.p = Process(target= self.run_detection)
 
     def run_detection(self):
-        #while True:
-        print('ree')
         detect.main()
-        print("Done")
+        print("Detection Running")
 
     def start_detection(self):
         self.create_process()
@@ -55,7 +53,7 @@ class Master(object):
         self.kit.stepper1.release()
         self.p.terminate()
         self.p.join()
-        print('stop?')
+        print('Detection Stopped')
 
 def main():
     #daemon = Pyro4.Daemon(host="192.168.1.24", port=9090)

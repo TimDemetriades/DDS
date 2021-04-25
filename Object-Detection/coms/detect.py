@@ -39,7 +39,6 @@ from pycoral.utils.edgetpu import run_inference
 
 from flask import Flask, render_template, Response
 import threading
-# from camera import Camera
 
 import time
 import board
@@ -47,22 +46,18 @@ from adafruit_motor import stepper
 from adafruit_motorkit import MotorKit
 
 kit = MotorKit(i2c=board.I2C())
-app = Flask(__name__)
+# app = Flask(__name__)
 
-outputFrame = None
-lock = threading.Lock()
+# @app.route('/')
+# def index():
+#     return render_template('./index.html')
 
-@app.route('/')
-def index():
-    return render_template('./index.html')
+# @app.route('/video_feed')
+# def video_feed():
+#     return Response(det(),
+#                     mimetype='multipart/x-mixed-replace; boundary=frame')
 
-@app.route('/video_feed')
-def video_feed():
-    return Response(main(),
-                    mimetype='multipart/x-mixed-replace; boundary=frame')
-
-
-def main():
+def det():
     default_model_dir = './'
     default_model = '/home/pi/DDS/Object-Detection/coms/output_tflite_graph_edgetpu_v2.tflite'
     default_labels = '/home/pi/DDS/Object-Detection/coms/drone_labels.txt'
@@ -121,7 +116,7 @@ def main():
         (flag, encodedImage) = cv2.imencode(".jpg", cv2_im)
         if not flag:
             continue
-        yield(b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + bytearray(encodedImage) + b'\r\n')
+        # yield(b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + bytearray(encodedImage) + b'\r\n')
 
     cap.release()
     cv2.destroyAllWindows()
@@ -162,10 +157,27 @@ def append_objs_to_img(cv2_im, inference_size, objs, labels):
 
     return cv2_im
 
+def main():
+    try:
+        det()
+        print('Web app starting', flush=True)
+        # app.run(host='192.168.1.24', port = 5050, debug=True)
+    except KeyboardInterrupt:
+        cv2.destroyAllWindows()
+        kit.stepper1.release()
+        print('Interrupted')
+        try:
+            sys.exit(0)
+        except SystemExit:
+            os._exit(0)
+
+
 if __name__ == '__main__':
     try:
-        # main()
-        app.run(host='192.168.1.24', debug=True)
+        det()
+        print('Web app starting', flush=True)
+        # app.run(host='192.168.1.24', debug=True)
+        
     except KeyboardInterrupt:
         cv2.destroyAllWindows()
         kit.stepper1.release()
