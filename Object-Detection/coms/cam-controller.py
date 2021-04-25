@@ -42,8 +42,9 @@ class Master(object):
         self.p = Process(target= self.run_detection)
 
     def run_detection(self):
+        print("Starting Detection")
         detect.main()
-        print("Detection Running")
+       
 
     def start_detection(self):
         self.create_process()
@@ -63,7 +64,7 @@ def main():
             },
             ns = True,
             host = '10.0.0.2',
-            port = 9091
+            # port = 9091
         )
 
 if __name__=="__main__":

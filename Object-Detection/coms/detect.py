@@ -46,16 +46,16 @@ from adafruit_motor import stepper
 from adafruit_motorkit import MotorKit
 
 kit = MotorKit(i2c=board.I2C())
-# app = Flask(__name__)
+app = Flask(__name__)
 
-# @app.route('/')
-# def index():
-#     return render_template('./index.html')
+@app.route('/')
+def index():
+    return render_template('./index.html')
 
-# @app.route('/video_feed')
-# def video_feed():
-#     return Response(det(),
-#                     mimetype='multipart/x-mixed-replace; boundary=frame')
+@app.route('/video_feed')
+def video_feed():
+    return Response(det(),
+                    mimetype='multipart/x-mixed-replace; boundary=frame')
 
 def det():
     default_model_dir = './'
@@ -116,7 +116,7 @@ def det():
         (flag, encodedImage) = cv2.imencode(".jpg", cv2_im)
         if not flag:
             continue
-        # yield(b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + bytearray(encodedImage) + b'\r\n')
+        yield(b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + bytearray(encodedImage) + b'\r\n')
 
     cap.release()
     cv2.destroyAllWindows()
@@ -159,9 +159,10 @@ def append_objs_to_img(cv2_im, inference_size, objs, labels):
 
 def main():
     try:
-        det()
+        # det()
         print('Web app starting', flush=True)
         # app.run(host='192.168.1.24', port = 5050, debug=True)
+        app.run(debug=False, host='192.168.1.24', port = 5050)
     except KeyboardInterrupt:
         cv2.destroyAllWindows()
         kit.stepper1.release()
@@ -174,9 +175,9 @@ def main():
 
 if __name__ == '__main__':
     try:
-        det()
+        # det()
         print('Web app starting', flush=True)
-        # app.run(host='192.168.1.24', debug=True)
+        app.run(host='192.168.1.24', debug=True)
         
     except KeyboardInterrupt:
         cv2.destroyAllWindows()
