@@ -11,7 +11,7 @@ import threading
 
 
 sys.excepthook = Pyro4.util.excepthook
-master = Pyro4.Proxy("PYRONAME:master-pi@192.168.1.24:9090")
+master = Pyro4.Proxy("PYRONAME:master-pi@10.0.0.2:9090")
 
 lo = True
 
@@ -66,6 +66,7 @@ def findSigSec(boolarray):
 
 switch_flag = False
 stop = True
+start = True
 nothere = 0
 stop_thresh = 0
 while (True):
@@ -89,12 +90,6 @@ while (True):
         if sigBWs.size >= 1:
             ct += 1
             guess += (drone_sig_range[0,0]-drone_sig_range[0,1])/2 + drone_sig_range[0,1]
-    #         clear_output(wait=True)
-    #         print(f"Drone BW: {sigBWs}" )
-    #         print(f"Drone Freq: {drone_sig_range}")
-    #         print(f"Drone Center Freq: {(drone_sig_range[0,0]-drone_sig_range[0,1])/2+sdr.rx_lo}")
-
-    # clear_output(wait=True)
 
     if switch_flag:
         if lo:
@@ -111,9 +106,12 @@ while (True):
         with open("./drone_loc.txt", 'w') as f:
             f.write(str(guess/ct))
         f.close()
-        master.start_detection()
-        stop = True
-        stop_thresh = 0
+        if start:
+            print("STARTING OBJ DETECTION...")
+            master.start_detection()
+            start = False
+            stop = True
+            stop_thresh = 0
         nothere = 0
         print(f"Drone Located at {guess/ct}")
     else:
@@ -123,9 +121,11 @@ while (True):
         stop_thresh += 1
         switch_flag = True
         nothere = 0
-        if stop_thresh > 10 and stop:
+        if stop_thresh > 5 and stop:
+            print("STOPING OBJ DETECTION...")
             master.stop_detection()
             stop = False
+            start = True
         print("SWITCHING LO")
 
     print(f"Number of Guesses: {ct}")
