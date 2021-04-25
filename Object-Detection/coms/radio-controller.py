@@ -8,7 +8,7 @@ import threading
 
 
 sys.excepthook = Pyro4.util.excepthook
-master = Pyro4.Proxy("PYRONAME:master-pi@192.168.1.24:9090")
+master = Pyro4.Proxy("PYRONAME:master-pi@10.0.0.2:9090")
 
 def main():
     print(master.drone_detected())
