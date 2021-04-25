@@ -1,6 +1,17 @@
 import numpy as np
 import adi
 
+import time
+import sys
+import os
+import Pyro4
+import Pyro4.util
+from multiprocessing import Process, Lock
+import threading
+
+
+sys.excepthook = Pyro4.util.excepthook
+master = Pyro4.Proxy("PYRONAME:master-pi@192.168.1.24:9090")
 
 lo = True
 
@@ -54,7 +65,9 @@ def findSigSec(boolarray):
     return np.array(SigSections[:-1]).astype(np.bool)
 
 switch_flag = False
+stop = True
 nothere = 0
+stop_thresh = 0
 while (True):
     ct = 0
     guess = 0
@@ -98,13 +111,21 @@ while (True):
         with open("./drone_loc.txt", 'w') as f:
             f.write(str(guess/ct))
         f.close()
+        master.start_detection()
+        stop = True
+        stop_thresh = 0
+        nothere = 0
         print(f"Drone Located at {guess/ct}")
     else:
         nothere += 1
 
-    if nothere > 10:
+    if nothere > 5:
+        stop_thresh += 1
         switch_flag = True
         nothere = 0
+        if stop_thresh > 10 and stop:
+            master.stop_detection()
+            stop = False
         print("SWITCHING LO")
 
     print(f"Number of Guesses: {ct}")
