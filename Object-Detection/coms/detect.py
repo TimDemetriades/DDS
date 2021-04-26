@@ -60,7 +60,6 @@ def index():
                 text = f.read()
                 yield f"data: {text}\n\n"
             time.sleep(.1)  
-            f.close()
         return Response(events(), content_type='text/event-stream')
     return render_template('./index.html')
     
