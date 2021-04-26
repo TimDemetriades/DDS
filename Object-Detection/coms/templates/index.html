@@ -48,8 +48,17 @@
 
       /* Second image*/
       .bgimg-2 {
-        background-image: url("https://github.com/TimDemetriades/DDS/blob/dev/resources/rf-shape.PNG?raw=true");
+        background-image: url("https://github.com/TimDemetriades/DDS/blob/dev/resources/Drone.JPG?raw=true");
         min-height: 500px;
+      }
+
+      .w3-wide {letter-spacing: 10px;}
+      .w3-hover-opacity {cursor: pointer;}
+
+      /* Third image (Contact) */
+      .bgimg-3 {
+        background-image: url("https://github.com/TimDemetriades/DDS/blob/dev/resources/rf-shape.PNG?raw=true");
+        min-height: 400px;
       }
 
       .w3-wide {letter-spacing: 10px;}
@@ -89,12 +98,26 @@
       </div>
     </div>
 
+    <!-- Container (About Section) -->
+    <div class="w3-content w3-container w3-padding-64" id="about">
+      <h3 class="w3-center">Stevens Institute of Technology - Senior Design</h3>
+      <p class="w3-center"><em>This is the Drone Deterrence System</em></p>
+      <p>Our project is an all inclusive system which detects and deters drones in the nearby area completely autonomously. The system is intended to be installed either on private property or a commercial business’ land such as farms and airports. Detection of intruding drones is performed through image and radio signals analysis. Deterrence of the drones is executed through a proprietary and targeted OFDM based attack leaving the drone unable to communicate with its controller. This project is meant to protect the privacy and intellectual property of our users against the increasing threat posed by video enabled drones.</p>
+    </div>
+
+    <!-- Second Parallax Image -->
+    <div class="bgimg-2 w3-display-container w3-opacity-min">
+      <div class="w3-display-middle">
+        <span class="w3-xxlarge w3-text-white w3-wide">Object Detection</span>
+      </div>
+    </div>
+
     <h1 style="text-align: center;">Object Detection Demonstration</h1>
     <img src="{{ url_for('video_feed') }}" alt="Drone Detection Feed">
     <br>
 
-    <!-- Second Parallax Image -->
-    <div class="bgimg-2 w3-display-container w3-opacity-min">
+    <!-- Third Parallax Image with Portfolio Text -->
+    <div class="bgimg-3 w3-display-container w3-opacity-min">
       <div class="w3-display-middle">
         <span class="w3-xxlarge w3-text-white w3-wide">Signal Detection</span>
       </div>
@@ -109,7 +132,17 @@
               }
       }
     </script>
-    <div id="data">nothing received yet</div>
+
+    <p class="w3-large w3-center w3-padding-16">Drone Center Frequency:</p>
+    <!-- <p class="w3-wide"><i class="fa fa-camera"></i>Photography</p> -->
+    <div class="w3-light-grey">
+      <div class="w3-container w3-padding-small w3-dark-grey w3-center" style="width:100%">    
+        <div id="data">Nothing received yet.</div>
+      </div>
+    </div>
+
+    <br>
+    <br>
 
   </body>
 
@@ -121,5 +154,6 @@
     <a href="https://sites.google.com/view/dronedeterrencesystem/home">
       <img src="https://github.com/TimDemetriades/DDS/blob/dev/resources/qr-code.png?raw=true" alt="QR Code" width="250" height="250" style="float: left;">
     </a>
+    <img src="https://github.com/TimDemetriades/DDS/blob/dev/resources/Transparent.png?raw=true" alt="QR Code" width="400" height="250" style="float: right;">
   </footer>
 </html>
