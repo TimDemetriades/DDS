@@ -139,3 +139,6 @@ dmypy.json
 # IQ Capture Directory
 
 IQ_Cap/
+
+# VS Code 
+*.vscode/
