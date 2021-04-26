@@ -1,9 +1,125 @@
+<!-- <!doctype html>
+<title>Server Send Events Demo</title>
+<style>
+  #data {
+        text-align: center;
+          }
+</style> -->
+
 <html>
   <head>
-    <title>Video Streaming Demonstration</title>
+    <title>Drone Deterrence System</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <style>
+      #data {
+        text-align: center;
+      }
+
+      img {
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      body,h1,h2,h3,h4,h5,h6 {font-family: "Lato", sans-serif;}
+      body, html {
+        height: 100%;
+        color: #777;
+        line-height: 1.8;
+      }
+
+      /* Create a Parallax Effect */
+      .bgimg-1, .bgimg-2, .bgimg-3 {
+        background-attachment: fixed;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: cover;
+      }
+
+      /* First image*/
+      .bgimg-1 {
+        background-image: url('https://github.com/TimDemetriades/DDS/blob/dev/resources/system-build-placeholder.JPG?raw=true');
+        min-height: 75%;
+      }
+
+      /* Second image*/
+      .bgimg-2 {
+        background-image: url("https://github.com/TimDemetriades/DDS/blob/dev/resources/rf-shape.PNG?raw=true");
+        min-height: 500px;
+      }
+
+      .w3-wide {letter-spacing: 10px;}
+      .w3-hover-opacity {cursor: pointer;}
+
+      /* Turn off parallax scrolling for tablets and phones */
+      @media only screen and (max-device-width: 1600px) {
+        .bgimg-1, .bgimg-2, .bgimg-3 {
+          background-attachment: scroll;
+          min-height: 400px;
+        }
+      }
+      </style>
   </head>
+
   <body>
-    <h1>Video Streaming Demonstration</h1>
-    <img src="{{ url_for('video_feed') }}">
+    <!-- Navbar (sit on top) -->
+    <div class="w3-top">
+      <div class="w3-bar" id="myNavbar">
+        <a class="w3-bar-item w3-button w3-hover-black w3-hide-medium w3-hide-large w3-right" href="javascript:void(0);" onclick="toggleFunction()" title="Toggle Navigation Menu">
+          <i class="fa fa-bars"></i>
+        </a>
+        <a href="https://sites.google.com/view/dronedeterrencesystem/home" class="w3-bar-item w3-button">Drone Deterrence System</a>
+        </a>
+      </div>
+
+      <!-- Navbar on small screens -->
+      <div id="navDemo" class="w3-bar-block w3-white w3-hide w3-hide-large w3-hide-medium">
+        <a href="https://sites.google.com/view/dronedeterrencesystem/home" class="w3-bar-item w3-button" onclick="toggleFunction()">Drone Deterrence System</a>
+      </div>
+    </div>
+
+    <!-- First Parallax Image with Logo Text -->
+    <div class="bgimg-1 w3-display-container w3-opacity-min" id="home">
+      <div class="w3-display-middle" style="white-space:nowrap;">
+        <span class="w3-center w3-padding-large w3-black w3-xlarge w3-wide w3-animate-opacity">Drone <span>Deterrence</span> System</span>
+      </div>
+    </div>
+
+    <h1 style="text-align: center;">Object Detection Demonstration</h1>
+    <img src="{{ url_for('video_feed') }}" alt="Drone Detection Feed">
+    <br>
+
+    <!-- Second Parallax Image -->
+    <div class="bgimg-2 w3-display-container w3-opacity-min">
+      <div class="w3-display-middle">
+        <span class="w3-xxlarge w3-text-white w3-wide">Signal Detection</span>
+      </div>
+    </div>
+
+    <script src="http://code.jquery.com/jquery-latest.js"></script>
+    <script>
+      if (!!window.EventSource) {
+          var source = new EventSource('/');
+          source.onmessage = function(e) {
+                $("#data").text(e.data);
+              }
+      }
+    </script>
+    <div id="data">nothing received yet</div>
+
   </body>
+
+  <!-- Footer -->
+  <footer class="w3-center w3-black w3-padding-64 w3-opacity w3-hover-opacity-off">
+    <a href="#home" class="w3-button w3-light-grey"><i class="fa fa-arrow-up w3-margin-right"></i>To the top</a>
+    <div class="w3-xlarge w3-section">
+    </div>
+    <a href="https://sites.google.com/view/dronedeterrencesystem/home">
+      <img src="https://github.com/TimDemetriades/DDS/blob/dev/resources/qr-code.png?raw=true" alt="QR Code" width="250" height="250" style="float: left;">
+    </a>
+  </footer>
 </html>
