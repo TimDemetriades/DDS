@@ -16,7 +16,7 @@ master = Pyro4.Proxy("PYRONAME:master-pi@10.0.0.2:9090")
 lo = True
 
 rxlo1 = 2.4305e9
-rxlo2 = 2.4505e9
+rxlo2 = 2.4455e9
 
 sdr = adi.Pluto()
 sdr.rx_lo = int(rxlo1)
@@ -79,7 +79,7 @@ while (True):
         freq_ndb = 10**(droneFreqData/10)
         freq_ma = MA(droneFreqData)
         freq_ma_ndb = MA(freq_ndb)
-        ma_thresh = freq_ndb.mean()*1.6
+        ma_thresh = freq_ndb.mean()*1.4
 
         if (np.sum(freq_ma_ndb > ma_thresh) > 0):
             BWs, freqRgs= findBWs(droneFreqLabels[findSigPts(freq_ma_ndb > ma_thresh)])
@@ -102,10 +102,11 @@ while (True):
             lo = True
         switch_flag = False
 
-    if ct > 10:
-        with open("./drone_loc.txt", 'w') as f:
-            f.write(str(guess/ct))
-        f.close()
+    if ct > 5:
+        # with open("./drone_loc.txt", 'w') as f:
+        #     f.write(str(guess/ct))
+        # f.close()
+        master.write_to_file(lines= f"{np.float32(guess/ct / 1e9):.4f} GHz")
         if start:
             print("STARTING OBJ DETECTION...")
             master.start_detection()
@@ -121,7 +122,7 @@ while (True):
         stop_thresh += 1
         switch_flag = True
         nothere = 0
-        if stop_thresh > 5 and stop:
+        if stop_thresh > 2 and stop:
             print("STOPING OBJ DETECTION...")
             master.stop_detection()
             stop = False
