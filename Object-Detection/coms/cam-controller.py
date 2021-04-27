@@ -45,16 +45,26 @@ class Master(object):
         print("Starting Detection")
         detect.main()
        
-
     def start_detection(self):
         self.create_process()
         self.p.start()
 
     def stop_detection(self):
-        self.kit.stepper1.release()
-        self.p.terminate()
-        self.p.join()
-        print('Detection Stopped')
+        try:
+            self.kit.stepper1.release()
+            self.p.terminate()
+            self.p.join()
+            print('Detection Stopped')
+        except Exception as e:
+            print(f'Either detection not running or {e}')
+
+    def write_to_file(self, lines = ['No Drone Detected']):
+        with open('connor.txt' , 'w') as f:
+            f.writelines(lines)
+    
+
+
+
 
 def main():
     #daemon = Pyro4.Daemon(host="192.168.1.24", port=9090)

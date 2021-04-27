@@ -37,7 +37,7 @@ from pycoral.utils.dataset import read_label_file
 from pycoral.utils.edgetpu import make_interpreter
 from pycoral.utils.edgetpu import run_inference
 
-from flask import Flask, render_template, Response
+from flask import Flask, render_template, Response, request
 import threading
 
 import time
@@ -48,14 +48,37 @@ from adafruit_motorkit import MotorKit
 kit = MotorKit(i2c=board.I2C())
 app = Flask(__name__)
 
+# @app.route('/')
+# def index():
+#     return render_template('./index.html')
+
 @app.route('/')
 def index():
+    if request.headers.get('accept') == 'text/event-stream':
+        def events():
+            with open("./connor.txt" , "r") as f:    # this is the name of the text file
+                text = f.read()
+                yield f"data: {text}\n\n"
+            time.sleep(.1)  
+        return Response(events(), content_type='text/event-stream')
     return render_template('./index.html')
-
+    
 @app.route('/video_feed')
 def video_feed():
     return Response(det(),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
+
+def shutdown_server():
+    func = request.environ.get('werkzeug.server.shutdown')
+    if func is None:
+        raise RuntimeError('Not running with the Werkzeug Server')
+    func()
+    
+# @app.route('/shutdown', methods=['GET'])
+# def shutdown():
+#     shutdown_server()
+#     return 'Server shutting down...'
+
 
 def det():
     default_model_dir = './'
@@ -162,7 +185,7 @@ def main():
         # det()
         print('Web app starting', flush=True)
         # app.run(host='192.168.1.24', port = 5050, debug=True)
-        app.run(debug=False, host='192.168.1.24', port = 5050)
+        app.run(debug=False, host='0.0.0.0', port = 5050)
     except KeyboardInterrupt:
         cv2.destroyAllWindows()
         kit.stepper1.release()
@@ -177,7 +200,7 @@ if __name__ == '__main__':
     try:
         # det()
         print('Web app starting', flush=True)
-        app.run(host='192.168.1.24', debug=True)
+        app.run(host='0.0.0.0', debug=True, port = 5050)
         
     except KeyboardInterrupt:
         cv2.destroyAllWindows()
