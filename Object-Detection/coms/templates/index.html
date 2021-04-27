@@ -91,6 +91,11 @@
       </div>
     </div>
 
+    <a href="https://sites.google.com/view/dronedeterrencesystem/home">
+      <img src="https://github.com/TimDemetriades/DDS/blob/dev/resources/qr-code.png?raw=true" alt="QR Code" width="250" height="250" style="float: right;">
+    </a>
+    <img src="https://github.com/TimDemetriades/DDS/blob/dev/resources/Transparent.png?raw=true" alt="Logo" width="400" height="250" style="float: left;">
+
     <!-- First Parallax Image with Logo Text -->
     <div class="bgimg-1 w3-display-container w3-opacity-min" id="home">
       <div class="w3-display-middle" style="white-space:nowrap;">
@@ -147,14 +152,28 @@
 
   </body>
 
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script type=text/javascript>
+            $(function() {
+              $('a#test').on('click', function(e) {
+                e.preventDefault()
+                $.getJSON('/background_process_test',
+                    function(data) {
+                  //do nothing
+                });
+                return false;
+              });
+            });
+    </script>
+
   <!-- Footer -->
-  <footer class="w3-center w3-black w3-padding-64 w3-opacity w3-hover-opacity-off">
-    <a href="#home" class="w3-button w3-light-grey"><i class="fa fa-arrow-up w3-margin-right"></i>To the top</a>
-    <div class="w3-xlarge w3-section">
+  <footer class="w3-center w3-black w3-padding-64 w3-opacity w3-hover-opacity-off" id="footer">
+    <!-- <a href="#home" class="w3-button w3-light-grey"><i class="fa fa-arrow-up w3-margin-right"></i>To the top</a> -->
+    <div class='Container'>
+      <form>
+          <a href=# id=test><button class='w3-button w3-light-grey'>Press To Restart</button></a>
+      </form>
+      
     </div>
-    <a href="https://sites.google.com/view/dronedeterrencesystem/home">
-      <img src="https://github.com/TimDemetriades/DDS/blob/dev/resources/qr-code.png?raw=true" alt="QR Code" width="250" height="250" style="float: left;">
-    </a>
-    <img src="https://github.com/TimDemetriades/DDS/blob/dev/resources/Transparent.png?raw=true" alt="Logo" width="400" height="250" style="float: right;">
   </footer>
 </html>
