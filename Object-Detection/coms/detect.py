@@ -37,7 +37,7 @@ from pycoral.utils.dataset import read_label_file
 from pycoral.utils.edgetpu import make_interpreter
 from pycoral.utils.edgetpu import run_inference
 
-from flask import Flask, render_template, Response
+from flask import Flask, render_template, Response, request
 import threading
 
 import time
@@ -173,7 +173,7 @@ def main():
         # det()
         print('Web app starting', flush=True)
         # app.run(host='192.168.1.24', port = 5050, debug=True)
-        app.run(debug=False, host='192.168.1.24', port = 5050)
+        app.run(debug=False, host='0.0.0.0', port = 5050)
     except KeyboardInterrupt:
         cv2.destroyAllWindows()
         kit.stepper1.release()
@@ -188,7 +188,7 @@ if __name__ == '__main__':
     try:
         # det()
         print('Web app starting', flush=True)
-        app.run(host='192.168.1.24', debug=True)
+        app.run(host='0.0.0.0', debug=True, port = 5050)
         
     except KeyboardInterrupt:
         cv2.destroyAllWindows()
