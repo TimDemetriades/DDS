@@ -68,6 +68,18 @@ def video_feed():
     return Response(det(),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
 
+def shutdown_server():
+    func = request.environ.get('werkzeug.server.shutdown')
+    if func is None:
+        raise RuntimeError('Not running with the Werkzeug Server')
+    func()
+    
+# @app.route('/shutdown', methods=['GET'])
+# def shutdown():
+#     shutdown_server()
+#     return 'Server shutting down...'
+
+
 def det():
     default_model_dir = './'
     default_model = '/home/pi/DDS/Object-Detection/coms/output_tflite_graph_edgetpu_v2.tflite'
