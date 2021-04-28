@@ -9,6 +9,17 @@ import Pyro4.util
 from multiprocessing import Process, Lock
 import threading
 
+from gnuradio import analog
+from gnuradio import channels
+from gnuradio.filter import firdes
+from gnuradio import gr
+import sys
+import signal
+from argparse import ArgumentParser
+from gnuradio.eng_arg import eng_float, intx
+from gnuradio import eng_notation
+import iio
+
 
 sys.excepthook = Pyro4.util.excepthook
 master = Pyro4.Proxy("PYRONAME:master-pi@10.0.0.2:9090")
@@ -25,6 +36,86 @@ sdr.sample_rate = int(40e6)
 sdr.rx_buffer_size = 1024
 
 print(sdr)
+
+class tx(gr.top_block):
+
+    def __init__(self):
+        gr.top_block.__init__(self, "Not titled yet")
+
+        ##################################################
+        # Variables
+        ##################################################
+        self.samp_rate = samp_rate = 1e6
+        self.fc = fc = int(3e9)
+
+        ##################################################
+        # Blocks
+        ##################################################
+        self.iio_pluto_sink_0 = iio.pluto_sink('ip:pluto.local', fc, int(samp_rate), 15000000, 32768, True, 0.0, '', True)
+        self.channels_channel_model_1 = channels.channel_model(
+            noise_voltage=40,
+            frequency_offset=0.0,
+            epsilon=1.0,
+            taps=[1.0 + 1.0j],
+            noise_seed=0,
+            block_tags=False)
+        self.analog_sig_source_x_1 = analog.sig_source_c(samp_rate, analog.GR_COS_WAVE, 1000, 1, 0, 0)
+
+
+        ##################################################
+        # Connections
+        ##################################################
+        self.connect((self.analog_sig_source_x_1, 0), (self.channels_channel_model_1, 0))
+        self.connect((self.channels_channel_model_1, 0), (self.iio_pluto_sink_0, 0))
+
+
+    def get_samp_rate(self):
+        return self.samp_rate
+
+    def set_samp_rate(self, samp_rate):
+        self.samp_rate = samp_rate
+        self.analog_sig_source_x_1.set_sampling_freq(self.samp_rate)
+        self.iio_pluto_sink_0.set_params(self.fc, int(self.samp_rate), 15000000, 0.0, '', True)
+
+    def get_fc(self):
+        return self.fc
+
+    def set_fc(self, fc):
+        self.fc = fc
+        self.iio_pluto_sink_0.set_params(self.fc, int(self.samp_rate), 15000000, 0.0, '', True)
+
+
+def Jam(fc, top_block_cls=tx, options=None):
+    tb = top_block_cls()
+
+    def sig_handler(sig=None, frame=None):
+        tb.stop()
+        tb.wait()
+        sdr.tx_hardwaregain_chan0 = -80
+        sdr.tx_destroy_buffer()
+
+        sys.exit(0)
+
+    signal.signal(signal.SIGINT, sig_handler)
+    signal.signal(signal.SIGTERM, sig_handler)
+
+    tb.start()
+    sdr.tx_lo = int(fc)
+
+    while master.show_transmit:
+        print("TRANSMITTING!")
+
+    tb.stop()
+    tb.wait()
+    sdr.tx_hardwaregain_chan0 = -80
+    sdr.tx_destroy_buffer()
+    
+    # try:
+    #     input('Press Enter to quit: ')
+    # except EOFError:
+    #     pass
+    # tb.stop()
+    # tb.wait()
 
 def FFT(samples, buf, samprate, lo):
     fft = np.fft.fftshift(np.fft.fft(samples)) / buf
@@ -106,15 +197,18 @@ while (True):
         # with open("./drone_loc.txt", 'w') as f:
         #     f.write(str(guess/ct))
         # f.close()
-        master.write_to_file(lines= f"{np.float32(guess/ct / 1e9):.4f} GHz")
+        master.write_to_file(lines= f"{np.float32(guess/ct / 1e9):.4f} ghz")
         if start:
-            print("STARTING OBJ DETECTION...")
+            print("starting obj detection...")
             master.start_detection()
-            start = False
-            stop = True
+            start = false
+            stop = true
             stop_thresh = 0
         nothere = 0
-        print(f"Drone Located at {guess/ct}")
+        print(f"drone located at {guess/ct}")
+        # jam
+        Jam(guess/ct)
+
     else:
         nothere += 1
 
