@@ -28,6 +28,16 @@ class Master(object):
         self.kit = MotorKit(i2c=board.I2C())
         self.detected = False
         self.freq = 0.0
+        self.transmit = False
+
+    def show_transmit(self):
+        return self.transmit
+        
+    def set_transmit_true(self):
+        self.transmit = True
+
+    def set_transmit_false(self):
+        self.transmit = False
 
     def show_freq(self):
         return self.freq
