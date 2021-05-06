@@ -58,7 +58,7 @@ transmit_status = "Not Active"
 def index():
     if request.headers.get('accept') == 'text/event-stream':
         def events():
-            with open("./connor.txt" , "r") as f:    # this is the name of the text file
+            with open("./Freq.txt" , "r") as f:    # this is the name of the text file
                 text = f.read()
                 yield f"data: {text}\n\n"
             time.sleep(.1)  

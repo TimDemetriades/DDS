@@ -69,7 +69,7 @@ class Master(object):
             print(f'Either detection not running or {e}')
 
     def write_to_file(self, lines = ['No Drone Detected']):
-        with open('connor.txt' , 'w') as f:
+        with open('Freq.txt' , 'w') as f:
             f.writelines(lines)
     
 
