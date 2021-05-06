@@ -136,6 +136,16 @@
                 $("#data").text(e.data);
               }
       }
+
+      function update_values() {
+            $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+            $.getJSON($SCRIPT_ROOT+"/_check",
+                function(data) {
+                    $("#transmit").text(data.transmit)
+                });
+        }
+
+      setInterval(update_values, 1000)
     </script>
 
     <h1 style="text-align: center;">Signal Detection Demonstration</h1>
@@ -151,7 +161,7 @@
     <!-- <p class="w3-wide"><i class="fa fa-camera"></i>Photography</p> -->
     <div class="w3-light-grey">
       <div class="w3-container w3-padding-small w3-dark-grey w3-center" style="width:100%">    
-        <div id="data" style="font-size: xx-large;">{{  transmit_status  }}</div>
+        <div id="transmit" style="font-size: xx-large;">{{  transmit_status  }}</div>
       </div>
     </div>
 
