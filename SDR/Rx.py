@@ -45,8 +45,8 @@ class tx(gr.top_block):
         ##################################################
         # Variables
         ##################################################
-        self.samp_rate = samp_rate = 1e6
-        self.fc = fc = int(3e9)
+        self.samp_rate = samp_rate = 40e6
+        self.fc = fc = int(2.4e9)
 
         ##################################################
         # Blocks
@@ -91,7 +91,7 @@ def Jam(fc, top_block_cls=tx, options=None):
     def sig_handler(sig=None, frame=None):
         tb.stop()
         tb.wait()
-        sdr.tx_hardwaregain_chan0 = -80
+        sdr.tx_harwaregain_chan0 = -80
         sdr.tx_destroy_buffer()
 
         sys.exit(0)
@@ -109,7 +109,7 @@ def Jam(fc, top_block_cls=tx, options=None):
     tb.wait()
     sdr.tx_hardwaregain_chan0 = -80
     sdr.tx_destroy_buffer()
-    
+
     # try:
     #     input('Press Enter to quit: ')
     # except EOFError:
@@ -170,7 +170,7 @@ while (True):
         freq_ndb = 10**(droneFreqData/10)
         freq_ma = MA(droneFreqData)
         freq_ma_ndb = MA(freq_ndb)
-        ma_thresh = freq_ndb.mean()*1.4
+        ma_thresh = freq_ndb.mean()*1.5
 
         if (np.sum(freq_ma_ndb > ma_thresh) > 0):
             BWs, freqRgs= findBWs(droneFreqLabels[findSigPts(freq_ma_ndb > ma_thresh)])
@@ -197,17 +197,18 @@ while (True):
         # with open("./drone_loc.txt", 'w') as f:
         #     f.write(str(guess/ct))
         # f.close()
-        master.write_to_file(lines= f"{np.float32(guess/ct / 1e9):.4f} ghz")
+        master.write_to_file(lines= f"{np.float32(guess/ct / 1e9):.4f} GHz")
         if start:
             print("starting obj detection...")
             master.start_detection()
-            start = false
-            stop = true
+            start = False
+            stop = True
             stop_thresh = 0
         nothere = 0
         print(f"drone located at {guess/ct}")
+        print(f"tx?:  {master.show_transmit()}")
         # jam
-        Jam(guess/ct)
+        #Jam(guess/ct)
 
     else:
         nothere += 1
