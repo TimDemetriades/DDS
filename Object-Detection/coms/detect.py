@@ -37,7 +37,7 @@ from pycoral.utils.dataset import read_label_file
 from pycoral.utils.edgetpu import make_interpreter
 from pycoral.utils.edgetpu import run_inference
 
-from flask import Flask, render_template, Response, request
+from flask import Flask, render_template, Response, request, jsonify
 import threading
 
 import time
@@ -45,12 +45,14 @@ import board
 from adafruit_motor import stepper
 from adafruit_motorkit import MotorKit
 
+import Pyro4
+
 kit = MotorKit(i2c=board.I2C())
 app = Flask(__name__)
 
-# @app.route('/')
-# def index():
-#     return render_template('./index.html')
+master = Pyro4.Proxy("PYRONAME:master-pi@10.0.0.2:9090")
+
+transmit_status = "Not Active"
 
 @app.route('/')
 def index():
@@ -61,25 +63,40 @@ def index():
                 yield f"data: {text}\n\n"
             time.sleep(.1)  
         return Response(events(), content_type='text/event-stream')
-    return render_template('./index.html')
+    return render_template('./index.html', transmit_status=transmit_status)
     
 @app.route('/video_feed')
 def video_feed():
     return Response(det(),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
 
+@app.route('/_check', methods= ['GET'])
+def check():
+    transmit_status = master.show_transmit()
+    if transmit_status == True:
+        return jsonify(transmit='Active')
+    else:
+        return jsonify(transmit='Inactive')
+    
+#background process happening without any refreshing
+@app.route('/background_process_test')
 def shutdown_server():
+    print("Restarting...")
     func = request.environ.get('werkzeug.server.shutdown')
     if func is None:
         raise RuntimeError('Not running with the Werkzeug Server')
     func()
-    
+    return ("nothing")
+
 # @app.route('/shutdown', methods=['GET'])
 # def shutdown():
 #     shutdown_server()
 #     return 'Server shutting down...'
 
+def current_milli_time():
+    return round(time.time() * 1000)
 
+    
 def det():
     default_model_dir = './'
     default_model = '/home/pi/DDS/Object-Detection/coms/output_tflite_graph_edgetpu_v2.tflite'
@@ -107,6 +124,10 @@ def det():
     frame_rate_calc = 1
     freq = cv2.getTickFrequency()
     
+    start_time = current_milli_time()
+    print(f'start: {start_time}\n')
+    drone = False
+
     while cap.isOpened():
         ret, frame = cap.read()
         if not ret:
@@ -139,6 +160,27 @@ def det():
         (flag, encodedImage) = cv2.imencode(".jpg", cv2_im)
         if not flag:
             continue
+        
+        print(objs, file=sys.stderr)
+        for obj in objs:
+            if obj.score > .4:
+                drone = True
+        print(drone, file=sys.stderr)
+        stop_time = current_milli_time()
+        print(f'diff: {(stop_time - start_time) / 1000}\n', file=sys.stderr)
+        if (stop_time - start_time) / 1000 > 10:
+            if drone:
+                print('Start Transmit', file=sys.stderr)
+                transmit_status = 'Active'
+                master.set_transmit_true()
+            else:
+                print('Stop Transmit', file=sys.stderr)
+                transmit_status = 'Not Active'
+                master.set_transmit_false()
+            
+            start = current_milli_time()
+            drone = False
+
         yield(b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + bytearray(encodedImage) + b'\r\n')
 
     cap.release()
@@ -175,8 +217,8 @@ def append_objs_to_img(cv2_im, inference_size, objs, labels):
             cv2_im = cv2.putText(cv2_im, label, (x0, y0+30),
                                 cv2.FONT_HERSHEY_SIMPLEX, 1.0, (255, 0, 0), 2)
 
-        if obj.score > .75:
-            cv2.putText(cv2_im, f'SHEEESH', (120,120), cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,0),2,cv2.LINE_AA)
+        #if obj.score > .75:
+        #    cv2.putText(cv2_im, f'SHEEESH', (120,120), cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,0),2,cv2.LINE_AA)
 
     return cv2_im
 
