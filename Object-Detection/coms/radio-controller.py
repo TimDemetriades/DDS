@@ -11,16 +11,19 @@ sys.excepthook = Pyro4.util.excepthook
 master = Pyro4.Proxy("PYRONAME:master-pi@10.0.0.2:9090")
 
 def main():
-    print(master.drone_detected())
-    master.swap_detected()
-    print(master.drone_detected())
+    # print(master.drone_detected())
+    # master.swap_detected()
+    # print(master.drone_detected())
     
     
     master.start_detection()
     print('Detection Started')
-    time.sleep(1000)
-    master.stop_detection()
-    print('Dectection Stopped')
+    while True:
+        time.sleep(5)
+        print(master.show_transmit())
+    # time.sleep(1000)
+    # master.stop_detection()
+    # print('Dectection Stopped')
     
 
 if __name__ == '__main__':
